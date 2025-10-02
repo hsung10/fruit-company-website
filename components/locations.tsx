@@ -102,27 +102,60 @@ function KakaoMap() {
     }
 
     const loadKakaoMaps = () => {
+      console.log('🗺️ 카카오맵 로딩 시작...')
+      console.log('📍 현재 도메인:', window.location.hostname)
+      console.log('🔑 API 키 확인:', 'cc70aa4e6c4416c91a18643e3e1593f6')
+      console.log('🌐 window.kakao 존재:', !!window.kakao)
+      console.log('🗺️ window.kakao.maps 존재:', !!(window.kakao && window.kakao.maps))
+      
       if (window.kakao && window.kakao.maps) {
-        // kakao.maps.load()를 사용하여 지도 API를 완전히 로드
-        window.kakao.maps.load(() => {
-          initializeMap()
-        })
+        console.log('✅ 카카오맵 API 발견, 지도 초기화 중...')
+        try {
+          // kakao.maps.load()를 사용하여 지도 API를 완전히 로드
+          window.kakao.maps.load(() => {
+            console.log('🎉 카카오맵 API 로드 완료, 지도 생성 중...')
+            initializeMap()
+          })
+        } catch (error) {
+          console.error('❌ kakao.maps.load() 실행 중 오류:', error)
+          setHasError(true)
+          setIsLoading(false)
+        }
       } else {
+        console.log('⏳ 카카오맵 API 대기 중...')
         // 카카오 API가 아직 로드되지 않은 경우 대기
         let attempts = 0
         const maxAttempts = 100 // 10초 대기 (100ms * 100)
         
         const checkKakao = setInterval(() => {
           attempts++
+          console.log(`🔄 카카오맵 API 확인 중... (${attempts}/${maxAttempts})`)
           
           if (window.kakao && window.kakao.maps) {
+            console.log('✅ 카카오맵 API 발견!')
             clearInterval(checkKakao)
-            window.kakao.maps.load(() => {
-              initializeMap()
-            })
+            try {
+              window.kakao.maps.load(() => {
+                console.log('🎉 카카오맵 API 로드 완료, 지도 생성 중...')
+                initializeMap()
+              })
+            } catch (error) {
+              console.error('❌ kakao.maps.load() 실행 중 오류:', error)
+              setHasError(true)
+              setIsLoading(false)
+            }
           } else if (attempts >= maxAttempts) {
             clearInterval(checkKakao)
-            console.error('카카오 지도 API 로딩 타임아웃 - API가 로드되지 않았습니다.')
+            console.error('❌ 카카오 지도 API 로딩 타임아웃')
+            console.error('🔍 가능한 원인:')
+            console.error('   1. API 키가 올바르지 않음')
+            console.error('   2. 도메인이 카카오 개발자 콘솔에 등록되지 않음')
+            console.error('   3. 네트워크 연결 문제')
+            console.error('   4. 스크립트 로딩 실패')
+            console.error('📋 현재 설정:')
+            console.error('   - 도메인:', window.location.hostname)
+            console.error('   - API 키: cc70aa4e6c4416c91a18643e3e1593f6')
+            console.error('   - 스크립트 URL: https://dapi.kakao.com/v2/maps/sdk.js')
             setHasError(true)
             setIsLoading(false)
           }

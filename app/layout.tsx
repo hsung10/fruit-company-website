@@ -22,6 +22,13 @@ export default function RootLayout({
         <Script
           src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=cc70aa4e6c4416c91a18643e3e1593f6"
           strategy="beforeInteractive"
+          onLoad={() => {
+            console.log('✅ 카카오맵 스크립트 로드 완료')
+            console.log('🌐 window.kakao:', !!window.kakao)
+          }}
+          onError={(e) => {
+            console.error('❌ 카카오맵 스크립트 로드 실패:', e)
+          }}
         />
         {children}
         <Analytics />
