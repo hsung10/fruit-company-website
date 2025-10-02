@@ -4,10 +4,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Phone, Clock } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
-// 구글 지도 타입 정의
+// 카카오 지도 타입 정의
 declare global {
   interface Window {
-    google: any
+    kakao: any
   }
 }
 
@@ -38,187 +38,100 @@ const locations = [
   },
 ]
 
-// 구글 지도 컴포넌트
-function GoogleMap() {
+// 카카오 지도 컴포넌트
+function KakaoMap() {
   const mapRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
 
   useEffect(() => {
-    const loadGoogleMaps = () => {
+    const initializeMap = () => {
+      if (!mapRef.current) return
+
       try {
-        if (window.google && mapRef.current) {
-          // 지도 중심점 (서울)
-          const center = { lat: 37.5665, lng: 126.9780 }
-          
-          // 지도 초기화
-          const map = new window.google.maps.Map(mapRef.current, {
-            zoom: 10,
-            center: center,
-            styles: [
-              {
-                featureType: "all",
-                elementType: "geometry.fill",
-                stylers: [{ weight: "2.00" }]
-              },
-              {
-                featureType: "all",
-                elementType: "geometry.stroke",
-                stylers: [{ color: "#9c9c9c" }]
-              },
-              {
-                featureType: "all",
-                elementType: "labels.text",
-                stylers: [{ visibility: "on" }]
-              },
-              {
-                featureType: "landscape",
-                elementType: "all",
-                stylers: [{ color: "#f2f2f2" }]
-              },
-              {
-                featureType: "landscape",
-                elementType: "geometry.fill",
-                stylers: [{ color: "#ffffff" }]
-              },
-              {
-                featureType: "landscape.man_made",
-                elementType: "geometry.fill",
-                stylers: [{ color: "#ffffff" }]
-              },
-              {
-                featureType: "poi",
-                elementType: "all",
-                stylers: [{ visibility: "off" }]
-              },
-              {
-                featureType: "road",
-                elementType: "all",
-                stylers: [{ saturation: -100 }, { lightness: 45 }]
-              },
-              {
-                featureType: "road",
-                elementType: "geometry.fill",
-                stylers: [{ color: "#eeeeee" }]
-              },
-              {
-                featureType: "road",
-                elementType: "labels.text.fill",
-                stylers: [{ color: "#7b7b7b" }]
-              },
-              {
-                featureType: "road",
-                elementType: "labels.text.stroke",
-                stylers: [{ color: "#ffffff" }]
-              },
-              {
-                featureType: "road.highway",
-                elementType: "all",
-                stylers: [{ visibility: "simplified" }]
-              },
-              {
-                featureType: "road.arterial",
-                elementType: "labels.icon",
-                stylers: [{ visibility: "off" }]
-              },
-              {
-                featureType: "transit",
-                elementType: "all",
-                stylers: [{ visibility: "off" }]
-              },
-              {
-                featureType: "water",
-                elementType: "all",
-                stylers: [{ color: "#46bcec" }, { visibility: "on" }]
-              },
-              {
-                featureType: "water",
-                elementType: "geometry.fill",
-                stylers: [{ color: "#c8d7d4" }]
-              },
-              {
-                featureType: "water",
-                elementType: "labels.text.fill",
-                stylers: [{ color: "#070707" }]
-              },
-              {
-                featureType: "water",
-                elementType: "labels.text.stroke",
-                stylers: [{ color: "#ffffff" }]
-              }
-            ]
-          })
-
-          // 매장 위치에 마커 추가
-          locations.forEach((location) => {
-            const marker = new window.google.maps.Marker({
-              position: { lat: location.lat, lng: location.lng },
-              map: map,
-              title: location.name,
-              icon: {
-                url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-                  <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="20" cy="20" r="18" fill="#f97316" stroke="#fff" stroke-width="2"/>
-                    <text x="20" y="26" text-anchor="middle" fill="white" font-size="16" font-weight="bold">🍎</text>
-                  </svg>
-                `),
-                scaledSize: new window.google.maps.Size(40, 40),
-              }
-            })
-
-            // 정보창 생성
-            const infoWindow = new window.google.maps.InfoWindow({
-              content: `
-                <div style="padding: 10px; max-width: 250px;">
-                  <h3 style="margin: 0 0 8px 0; color: #f97316; font-size: 16px; font-weight: bold;">${location.name}</h3>
-                  <p style="margin: 4px 0; font-size: 14px; color: #666;">📍 ${location.address}</p>
-                  <p style="margin: 4px 0; font-size: 14px; color: #666;">📞 ${location.phone}</p>
-                  <p style="margin: 4px 0; font-size: 14px; color: #666;">🕒 ${location.hours}</p>
-                </div>
-              `
-            })
-
-            // 마커 클릭 시 정보창 표시
-            marker.addListener("click", () => {
-              infoWindow.open(map, marker)
-            })
-          })
-
-          setIsLoading(false)
+        // 지도 중심점 (서울 - 강남구)
+        const center = new window.kakao.maps.LatLng(37.5665, 126.9780)
+        
+        // 지도 옵션
+        const options = {
+          center: center,
+          level: 8 // 지도 확대 레벨
         }
+
+        // 지도 생성
+        const map = new window.kakao.maps.Map(mapRef.current, options)
+
+        // 매장 위치에 마커 추가
+        locations.forEach((location) => {
+          const markerPosition = new window.kakao.maps.LatLng(location.lat, location.lng)
+          
+          // 마커 생성
+          const marker = new window.kakao.maps.Marker({
+            position: markerPosition,
+            title: location.name
+          })
+
+          // 마커를 지도에 표시
+          marker.setMap(map)
+
+          // 인포윈도우 생성
+          const infoWindow = new window.kakao.maps.InfoWindow({
+            content: `
+              <div style="padding: 15px; min-width: 250px; font-family: 'Malgun Gothic', sans-serif;">
+                <h3 style="margin: 0 0 10px 0; color: #f97316; font-size: 16px; font-weight: bold;">${location.name}</h3>
+                <p style="margin: 5px 0; font-size: 14px; color: #666; line-height: 1.4;">📍 ${location.address}</p>
+                <p style="margin: 5px 0; font-size: 14px; color: #666; line-height: 1.4;">📞 ${location.phone}</p>
+                <p style="margin: 5px 0; font-size: 14px; color: #666; line-height: 1.4;">🕒 ${location.hours}</p>
+              </div>
+            `,
+            removable: true
+          })
+
+          // 마커 클릭 시 인포윈도우 표시
+          window.kakao.maps.event.addListener(marker, 'click', () => {
+            infoWindow.open(map, marker)
+          })
+        })
+
+        setIsLoading(false)
       } catch (error) {
-        console.error('구글 지도 로딩 오류:', error)
+        console.error('카카오 지도 초기화 오류:', error)
         setHasError(true)
         setIsLoading(false)
       }
     }
 
-    const handleScriptError = () => {
-      console.error('구글 지도 API 스크립트 로딩 실패')
-      setHasError(true)
-      setIsLoading(false)
-    }
-
-    // 구글 지도 API 로드
-    if (!window.google) {
-      // API 키가 없으면 대체 UI 표시
-      if (!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
-        console.warn('구글 지도 API 키가 설정되지 않았습니다.')
-        setHasError(true)
-        setIsLoading(false)
-        return
+    const loadKakaoMaps = () => {
+      if (window.kakao && window.kakao.maps) {
+        // kakao.maps.load()를 사용하여 지도 API를 완전히 로드
+        window.kakao.maps.load(() => {
+          initializeMap()
+        })
+      } else {
+        // 카카오 API가 아직 로드되지 않은 경우 대기
+        let attempts = 0
+        const maxAttempts = 100 // 10초 대기 (100ms * 100)
+        
+        const checkKakao = setInterval(() => {
+          attempts++
+          
+          if (window.kakao && window.kakao.maps) {
+            clearInterval(checkKakao)
+            window.kakao.maps.load(() => {
+              initializeMap()
+            })
+          } else if (attempts >= maxAttempts) {
+            clearInterval(checkKakao)
+            console.error('카카오 지도 API 로딩 타임아웃 - API가 로드되지 않았습니다.')
+            setHasError(true)
+            setIsLoading(false)
+          }
+        }, 100)
       }
-
-      const script = document.createElement('script')
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`
-      script.async = true
-      script.defer = true
-      script.onload = loadGoogleMaps
-      script.onerror = handleScriptError
-      document.head.appendChild(script)
-    } else {
-      loadGoogleMaps()
     }
+
+    // 컴포넌트 마운트 후 지도 로드 시작
+    loadKakaoMaps()
   }, [])
 
   // 로딩 중일 때
@@ -244,12 +157,11 @@ function GoogleMap() {
           <div>
             <h3 className="text-lg font-semibold text-foreground mb-2">죄송합니다. 문제가 발생했습니다.</h3>
             <p className="text-muted-foreground text-sm">
-              Google 지도가 제대로 로드되지 않았습니다. 자바스크립트 콘솔에서 자세한 기술 정보를 확인하세요.
+              카카오 지도가 제대로 로드되지 않았습니다. 자바스크립트 콘솔에서 자세한 기술 정보를 확인하세요.
             </p>
           </div>
           <div className="text-xs text-muted-foreground">
-            <p>API 키 설정이 필요할 수 있습니다.</p>
-            <p>GOOGLE_MAPS_SETUP.md 파일을 참고해주세요.</p>
+            <p>카카오 지도 API 키 설정을 확인해주세요.</p>
           </div>
         </div>
       </div>
@@ -265,7 +177,7 @@ function GoogleMap() {
   )
 }
 
-// 대체 지도 컴포넌트 (API 키가 없을 때)
+// 대체 지도 컴포넌트 (API 로딩 실패 시)
 function FallbackMap() {
   return (
     <div className="w-full h-full flex items-center justify-center bg-muted rounded-lg">
@@ -290,8 +202,8 @@ function FallbackMap() {
           ))}
         </div>
         <div className="text-xs text-muted-foreground">
-          <p>구글 지도를 사용하려면 API 키 설정이 필요합니다.</p>
-          <p>GOOGLE_MAPS_SETUP.md 파일을 참고해주세요.</p>
+          <p>카카오 지도 API 로딩에 문제가 발생했습니다.</p>
+          <p>네트워크 연결을 확인해주세요.</p>
         </div>
       </div>
     </div>
@@ -335,11 +247,7 @@ export function Locations() {
 
         <div className="bg-card rounded-xl overflow-hidden shadow-lg">
           <div className="aspect-[21/9]">
-            {process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? (
-              <GoogleMap />
-            ) : (
-              <FallbackMap />
-            )}
+            <KakaoMap />
           </div>
         </div>
       </div>
